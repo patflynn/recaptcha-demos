@@ -37,11 +37,13 @@ app.controller('GreetingsCtrl', ['$scope', 'GreetingsService', function ($scope,
 app.service('GreetingsService', ['$http', function ($http) {
 
     this.addGreeting = function addGreeting(username, message) {
-        return $http({
+        let response = $http({
             method: 'POST',
             url: 'greetings',
             data: {username: username, message: message, token: grecaptcha.getResponse(captchaWidget)}
         });
+        grecaptcha.reset(captchaWidget)
+        return response;
     }
 
     this.getAllGreetings = function getAllGreetings() {

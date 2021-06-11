@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @RestController
 public class GreetingController {
 
     private final GreetingRepository greetingRepository;
     private final OkHttpClient httpClient = new OkHttpClient();
+    private Logger logger = Logger.getLogger(GreetingController.class.getName());
 
     @Autowired
     public GreetingController(GreetingRepository greetingRepository) {
@@ -37,7 +39,7 @@ public class GreetingController {
         Map<String, Object> values = parser.parseMap(postPayload);
         String captchaToken = (String) values.get("token");
         FormBody formBody = new FormBody.Builder()
-                .add("secret", "put your secret key here")
+                .add("secret", "token here")
                 .add("response", captchaToken)
                 .build();
         Request request = new Request.Builder()
@@ -49,6 +51,7 @@ public class GreetingController {
             if (recaptchaResponse.isSuccessful()) {
                 Map<String, Object> captchaResponse = parser.parseMap(recaptchaResponse.body().string());
                 boolean isHuman = (boolean) captchaResponse.get("success");
+                logger.info("recaptcha verdict: " + (isHuman ? "human after all" : "robot"));
                 if (!isHuman) {
                     throw new RuntimeException("we're onto you!");
                 }
@@ -60,6 +63,7 @@ public class GreetingController {
         }
 
         greetingRepository.save(new Greeting((String) values.get("username"), (String) values.get("message")));
+        logger.info("user has been saved: " + values.toString());
         return null;
     }
 }
