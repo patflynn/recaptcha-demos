@@ -40,7 +40,7 @@ app.service('GreetingsService', ['$http', function ($http) {
         return $http({
             method: 'POST',
             url: 'greetings',
-            data: {username: username, message: message}
+            data: {username: username, message: message, token: grecaptcha.getResponse(captchaWidget)}
         });
     }
 

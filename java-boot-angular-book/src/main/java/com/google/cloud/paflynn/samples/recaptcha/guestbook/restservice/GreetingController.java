@@ -2,19 +2,24 @@ package com.google.cloud.paflynn.samples.recaptcha.guestbook.restservice;
 
 import com.google.cloud.paflynn.samples.recaptcha.guestbook.resouces.Greeting;
 import com.google.cloud.paflynn.samples.recaptcha.guestbook.resouces.GreetingRepository;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
 public class GreetingController {
 
     private final GreetingRepository greetingRepository;
-
+    private final OkHttpClient httpClient = new OkHttpClient();
 
     @Autowired
     public GreetingController(GreetingRepository greetingRepository) {
@@ -30,6 +35,30 @@ public class GreetingController {
     public Greeting greeting(@RequestBody String postPayload) {
         JacksonJsonParser parser = new JacksonJsonParser();
         Map<String, Object> values = parser.parseMap(postPayload);
+        String captchaToken = (String) values.get("token");
+        FormBody formBody = new FormBody.Builder()
+                .add("secret", "put your secret key here")
+                .add("response", captchaToken)
+                .build();
+        Request request = new Request.Builder()
+                .url("https://www.google.com/recaptcha/api/siteverify")
+                .post(formBody)
+                .build();
+        try {
+            Response recaptchaResponse = httpClient.newCall(request).execute();
+            if (recaptchaResponse.isSuccessful()) {
+                Map<String, Object> captchaResponse = parser.parseMap(recaptchaResponse.body().string());
+                boolean isHuman = (boolean) captchaResponse.get("success");
+                if (!isHuman) {
+                    throw new RuntimeException("we're onto you!");
+                }
+            } else {
+                throw new RuntimeException("damn something went wrong with recaptcha");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("this can't be good", e);
+        }
+
         greetingRepository.save(new Greeting((String) values.get("username"), (String) values.get("message")));
         return null;
     }
