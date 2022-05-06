@@ -64,8 +64,11 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
+		  <from>
+		    <image>gcr.io/distroless/java17-debian11</image>
+		  </from>
                     <to>
-                        <image>gcr.io/broken-dev/recaptcha-java-demo</image>
+                        <image>gcr.io/gunk-dev/recaptcha-java-demo</image>
                     </to>
                 </configuration>
             </plugin>
