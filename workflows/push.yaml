@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: chainguard-dev/actions/setup-chainctl@main
+        with:
+          identity: e3b934ffcb89d0c85a3e87e40092de2cc5eff566/844585f9dd79c40e  # from above
+      - uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'temurin'
+      - run: |
+          mvn compile jib:build -Djib.to.image=registry.enforce.dev/8c3a5484d4dab21a2c65244549dee4a668dabb09/recaptcha-jib-demo
+
