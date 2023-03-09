@@ -20,5 +20,6 @@ jobs:
           java-version: 11
           distribution: 'temurin'
       - run: |
+          cd java-boot-angular-book
           mvn compile jib:build -Djib.to.image=registry.enforce.dev/8c3a5484d4dab21a2c65244549dee4a668dabb09/recaptcha-jib-demo
 
